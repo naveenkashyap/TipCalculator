@@ -21,6 +21,7 @@ The following **optional** features are implemented:
 
 The following **additional** features are implemented:
 
+- [X] "Reset to Default" functionality on Settings page sets default tip to 15%
 - [X] Views blur in as view appears and blur out as views dissapear
 - [X] Elements (TextFields, Labels, etc.) slide between rest and active positions
 - [X] Bill TextView enables clear functionality for quick edits
@@ -39,7 +40,7 @@ Describe any challenges encountered while building the app.
 
 ## License
 
-    Copyright [yyyy] [name of copyright owner]
+    Copyright 2017 Naveen Kashyap
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
