@@ -9,6 +9,8 @@
 import UIKit
 
 class ViewController: UIViewController {
+    @IBOutlet var BaseView: UIView!
+    @IBOutlet weak var LabelView: UIView!
     @IBOutlet weak var BillField: UITextField!
     @IBOutlet weak var TipLabel: UILabel!
     @IBOutlet weak var TotalLabel: UILabel!
@@ -20,32 +22,81 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         self.title = "Tipster"
-        BillField.placeholder = "$"
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        BlurView.alpha = 1
         let defaults = UserDefaults.standard
         let index = defaults.integer(forKey: "defaultSegmentIndex")
         TipControl.selectedSegmentIndex = index
+        let billAmount = defaults.string(forKey: "previousBillAmount") ?? ""
+        BillField.text = billAmount
+        BillField.placeholder = Locale.current.currencySymbol
         calculateTip(TipControl)
+        brightenViews()
+        setActivePosition()
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        UIViewPropertyAnimator(duration: 1, curve: .easeInOut){
-            self.BlurView.alpha = 0
-        }.startAnimation()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        let defaults = UserDefaults.standard
+        let previousBillAmount = BillField.text
+        defaults.set(previousBillAmount, forKey: "previousBillAmount")
+        defaults.synchronize()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    func brightenViews(){
+        BaseView.alpha = 0
+        BlurView.alpha = 1
+        UIView.animate(withDuration: 0.7) {
+            self.BaseView.alpha = 1
+            self.BlurView.alpha = 0
+        }
+    }
+    
+    func darkenViews() {
+        BaseView.alpha = 1
+        BlurView.alpha = 0
+        UIView.animate(withDuration: 0.7) {
+            self.BaseView.alpha = 0
+            self.BlurView.alpha = 1
+        }
+    }
+    
+    func setRestPosition() {
+        BillField.transform = CGAffineTransform(translationX: 0, y: 0)
+        LabelView.transform = CGAffineTransform(translationX: 0, y: 0)
+        UIView.animate(withDuration: 0.9) {
+            self.BillField.transform = CGAffineTransform(translationX: 0, y: 100)
+            self.LabelView.transform = CGAffineTransform(translationX: 0, y: 200)
+        }
+    }
+    
+    func setActivePosition(){
+        BillField.transform = CGAffineTransform(translationX: 0, y: 100)
+        LabelView.transform = CGAffineTransform(translationX: 0, y: 200)
+        UIView.animate(withDuration: 0.9, animations: {
+            self.BillField.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.LabelView.transform = CGAffineTransform(translationX: 0, y: 0)
+        }) {(Bool) in
+            self.BillField.becomeFirstResponder()
+        }
+    }
+    
     @IBAction func onTapField(_ sender: AnyObject) {
+        setActivePosition()
     }
 
     @IBAction func onTap(_ sender: AnyObject) {
         view.endEditing(true)
+        setRestPosition()
+
     }
 
     @IBAction func calculateTip(_ sender: AnyObject) {
@@ -55,8 +106,13 @@ class ViewController: UIViewController {
         let tip = bill * tipPercentagess[TipControl.selectedSegmentIndex]
         let total = bill + tip
         
-        TipLabel.text = String(format: "$%.2f", tip)
-        TotalLabel.text = String(format: "$%.2f", total)
+        let formatter = NumberFormatter()
+        formatter.usesGroupingSeparator = true
+        formatter.numberStyle = NumberFormatter.Style.currency
+        formatter.locale = Locale.current
+        
+        TipLabel.text = formatter.string(from: tip as NSNumber)
+        TotalLabel.text = formatter.string(from: total as NSNumber)
     }
 }
 
